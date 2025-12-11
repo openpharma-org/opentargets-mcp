@@ -1,12 +1,6 @@
-![Logo](logo.png)
-
-# Unofficial Open Targets MCP Server 🧬
+# Unofficial Open Targets MCP Server
 
 Unofficial Model Context Protocol server for accessing Open Targets platform data for gene-drug-disease associations research.
-
-[![API](https://img.shields.io/badge/Open%20Targets-v25.0.1-blue)](https://platform.opentargets.org/) 
-
-Developed by [OpenPharma](https://github.com/openpharma-org) 
 
 ## ✅ **Verified Features**
 
@@ -61,8 +55,8 @@ node /path/to/opentargets-server/build/index.js
 {
   "name": "search_targets",
   "arguments": {
-    "query": "BRCA1", // Gene symbol, name, or description
-    "size": 10 // Optional: 1-500 results (default: 25)
+    "query": "BRCA1",
+    "size": 10
   }
 }
 ```
@@ -81,8 +75,8 @@ node /path/to/opentargets-server/build/index.js
 {
   "name": "search_diseases",
   "arguments": {
-    "query": "breast cancer", // Disease name, synonym, or description
-    "size": 10 // Optional: 1-500 results (default: 25)
+    "query": "breast cancer",
+    "size": 10
   }
 }
 ```
@@ -95,8 +89,8 @@ node /path/to/opentargets-server/build/index.js
 {
   "name": "get_target_disease_associations",
   "arguments": {
-    "targetId": "ENSG00000012048", // Target Ensembl ID
-    "size": 10 // Optional: 1-500 results
+    "targetId": "ENSG00000012048",
+    "size": 10
   }
 }
 ```
@@ -107,8 +101,8 @@ node /path/to/opentargets-server/build/index.js
 {
   "name": "get_target_disease_associations",
   "arguments": {
-    "diseaseId": "EFO_0000305", // Disease EFO ID
-    "size": 10 // Optional: 1-500 results
+    "diseaseId": "EFO_0000305",
+    "size": 10
   }
 }
 ```
@@ -121,8 +115,8 @@ node /path/to/opentargets-server/build/index.js
 {
   "name": "get_disease_targets_summary",
   "arguments": {
-    "diseaseId": "EFO_0000305", // Disease EFO ID (required)
-    "size": 20 // Optional: 1-500 targets (default: 50)
+    "diseaseId": "EFO_0000305",
+    "size": 20
   }
 }
 ```
@@ -135,7 +129,7 @@ node /path/to/opentargets-server/build/index.js
 {
   "name": "get_target_details",
   "arguments": {
-    "id": "ENSG00000012048" // Target Ensembl gene ID
+    "id": "ENSG00000012048"
   }
 }
 ```
@@ -148,7 +142,7 @@ node /path/to/opentargets-server/build/index.js
 {
   "name": "get_disease_details",
   "arguments": {
-    "id": "EFO_0000305" // Disease EFO ID
+    "id": "EFO_0000305"
   }
 }
 ```
