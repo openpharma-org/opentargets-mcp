@@ -6,7 +6,7 @@ Unofficial Model Context Protocol server for accessing Open Targets platform dat
 
 [![API](https://img.shields.io/badge/Open%20Targets-v25.0.1-blue)](https://platform.opentargets.org/) 
 
-Developed by [Augmented Nature](https://augmentednature.ai) 
+Developed by [OpenPharma](https://github.com/openpharma-org) 
 
 ## ✅ **Verified Features**
 
@@ -231,7 +231,7 @@ Access Open Targets data through standardized URIs:
 
 ## 🤝 **Contributing**
 
-This server is developed and maintained by [Augmented Nature](https://augmentednature.ai). For enhancements:
+This server is developed and maintained by [OpenPharma](https://github.com/openpharma-org). For enhancements:
 
 1. Fork the repository
 2. Make your changes
