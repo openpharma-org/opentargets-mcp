@@ -2,31 +2,18 @@
 
 Unofficial Model Context Protocol server for accessing Open Targets platform data for gene-drug-disease associations research.
 
-## ✅ **Verified Features**
+## **Verified Features**
 
 **All 6 tools working with live Open Targets API data:**
 
-- 🎯 **Target Search** - Gene symbols, names, descriptions (BRCA1, TP53, etc.)
-- 🦠 **Disease Search** - Names, synonyms, descriptions (cancer, diabetes, etc.)
-- 🔗 **Target-Disease Associations** - Evidence scores from 20+ databases
-- 📊 **Disease Target Summaries** - Prioritized therapeutic targets
-- 🧬 **Target Details** - Comprehensive gene/protein information
-- 🎭 **Disease Details** - Complete disease profiles with ontologies
+- **Target Search** - Gene symbols, names, descriptions (BRCA1, TP53, etc.)
+- **Disease Search** - Names, synonyms, descriptions (cancer, diabetes, etc.)
+- **Target-Disease Associations** - Evidence scores from 20+ databases
+- **Disease Target Summaries** - Prioritized therapeutic targets
+- **Target Details** - Comprehensive gene/protein information
+- **Disease Details** - Complete disease profiles with ontologies
 
-## 🚀 **Quick Start**
-
-```bash
-# Install and build
-npm install
-npm run build
-
-# Run the server
-node build/index.js
-```
-
-## 📋 **MCP Client Configuration**
-
-### Claude Desktop
+## **MCP Client Configuration**
 
 ```json
 {
@@ -39,15 +26,9 @@ node build/index.js
 }
 ```
 
-### Other MCP Clients
+## **Available Tools**
 
-```bash
-node /path/to/opentargets-server/build/index.js
-```
-
-## 🛠️ **Available Tools**
-
-### 🎯 `search_targets`
+### `search_targets`
 
 **Search therapeutic targets by gene symbol, name, or description**
 
@@ -67,7 +48,7 @@ node /path/to/opentargets-server/build/index.js
 - **BRCA2** (ENSG00000139618) - BRCA2 DNA repair associated
 - **BRIP1** (ENSG00000136492) - BRCA1 interacting DNA helicase 1
 
-### 🦠 `search_diseases`
+### `search_diseases`
 
 **Search diseases by name, synonym, or description**
 
@@ -81,7 +62,7 @@ node /path/to/opentargets-server/build/index.js
 }
 ```
 
-### 🔗 `get_target_disease_associations`
+### `get_target_disease_associations`
 
 **Get target-disease associations with evidence scores**
 
@@ -107,7 +88,7 @@ node /path/to/opentargets-server/build/index.js
 }
 ```
 
-### 📊 `get_disease_targets_summary`
+### `get_disease_targets_summary`
 
 **Get prioritized targets associated with a disease**
 
@@ -121,7 +102,7 @@ node /path/to/opentargets-server/build/index.js
 }
 ```
 
-### 🧬 `get_target_details`
+### `get_target_details`
 
 **Get comprehensive target information**
 
@@ -134,7 +115,7 @@ node /path/to/opentargets-server/build/index.js
 }
 ```
 
-### 🎭 `get_disease_details`
+### `get_disease_details`
 
 **Get comprehensive disease information**
 
@@ -147,7 +128,7 @@ node /path/to/opentargets-server/build/index.js
 }
 ```
 
-## 📚 **Resource Templates**
+## **Resource Templates**
 
 Access Open Targets data through standardized URIs:
 
@@ -157,7 +138,7 @@ Access Open Targets data through standardized URIs:
 - `opentargets://association/{targetId}/{diseaseId}` - Association evidence
 - `opentargets://search/{query}` - Search results
 
-## 🧪 **Real-World Examples**
+## **Real-World Examples**
 
 ### Cancer Research Workflow
 
@@ -188,7 +169,7 @@ Access Open Targets data through standardized URIs:
 {"name": "get_disease_targets_summary", "arguments": {"diseaseId": "EFO_0000249", "size": 30}}
 ```
 
-## 🔬 **Data Sources & Standards**
+## **Data Sources & Standards**
 
 **Open Targets integrates 20+ databases:**
 
@@ -207,44 +188,10 @@ Access Open Targets data through standardized URIs:
 - **Diseases**: EFO IDs (e.g., EFO_0000305)
 - **Drugs**: ChEMBL IDs (e.g., CHEMBL1234)
 
-## 🏗️ **Architecture**
-
-- **TypeScript** implementation with robust type safety
-- **GraphQL** queries for efficient data retrieval
-- **MCP Protocol** compliant JSON-RPC communication
-- **Error Handling** with comprehensive validation
-- **Production Ready** with 30s timeouts and proper logging
-
-## 📊 **API Information**
+## **API Information**
 
 - **Base URL**: `https://api.platform.opentargets.org/api/v4/graphql`
 - **Version**: Open Targets v25.0.1
 - **Rate Limits**: Generous for research use
 - **Authentication**: None required
 - **Format**: GraphQL queries, JSON responses
-
-## 🤝 **Contributing**
-
-This server is developed and maintained by [OpenPharma](https://github.com/openpharma-org). For enhancements:
-
-1. Fork the repository
-2. Make your changes
-3. Submit a pull request
-
-## **Support**
-
-For issues with:
-
-- **MCP Server**: Check the server logs and error outputs
-- **Open Targets API**: Visit [platform.opentargets.org](https://platform.opentargets.org/)
-- **GraphQL Queries**: Use the [Open Targets GraphQL browser](https://api.platform.opentargets.org/api/v4/graphql/browser)
-
-## Citation
-If you use this project in your research or publications, please cite it as follows:
-
-```bibtex @misc{opentargetsmcp2025, 
-author = {Moudather Chelbi},
-title = {OpenTargets MCP Server},
-year = {2025},
-howpublished = {https://github.com/openpharma-org/opentargets-mcp},
-note = {Accessed: 2025-06-29}
