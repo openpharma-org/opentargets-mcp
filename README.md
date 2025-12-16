@@ -20,7 +20,7 @@ Unofficial Model Context Protocol server for accessing Open Targets platform dat
   "mcpServers": {
     "opentargets-server": {
       "command": "node",
-      "args": ["/path/to/opentargets-server/build/index.js"]
+      "args": ["/path/to/opentargets-mcp-server/build/index.js"]
     }
   }
 }

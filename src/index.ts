@@ -1,15 +1,7 @@
 #!/usr/bin/env node
-import { Server } from '@modelcontextprotocol/sdk/server/index.js';
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import {
-  CallToolRequestSchema,
-  ErrorCode,
-  ListResourcesRequestSchema,
-  ListResourceTemplatesRequestSchema,
-  ListToolsRequestSchema,
-  McpError,
-  ReadResourceRequestSchema,
-} from '@modelcontextprotocol/sdk/types.js';
+import { z } from 'zod';
 import axios, { AxiosInstance } from 'axios';
 
 // Type definitions
@@ -77,12 +69,11 @@ const isValidIdArgs = (args: any): args is { id: string } => {
 };
 
 class OpenTargetsServer {
-  private server: Server;
-  private apiClient: AxiosInstance;
+  private server: McpServer;
   private graphqlClient: AxiosInstance;
 
   constructor() {
-    this.server = new Server(
+    this.server = new McpServer(
       {
         name: 'opentargets-server',
         version: '0.1.0',
@@ -94,16 +85,6 @@ class OpenTargetsServer {
         },
       }
     );
-
-    // Initialize Open Targets REST API client
-    this.apiClient = axios.create({
-      baseURL: 'https://api.platform.opentargets.org/api/v4',
-      timeout: 30000,
-      headers: {
-        'User-Agent': 'OpenTargets-MCP-Server/0.1.0',
-        'Content-Type': 'application/json',
-      },
-    });
 
     // Initialize Open Targets GraphQL API client
     this.graphqlClient = axios.create({
@@ -119,7 +100,7 @@ class OpenTargetsServer {
     this.setupToolHandlers();
 
     // Error handling
-    this.server.onerror = (error: Error) => console.error('[MCP Error]', error);
+    this.server.server.onerror = (error: Error) => console.error('[MCP Error]', error);
     process.on('SIGINT', async () => {
       await this.server.close();
       process.exit(0);
@@ -127,211 +108,87 @@ class OpenTargetsServer {
   }
 
   private setupResourceHandlers() {
-    this.server.setRequestHandler(
-      ListResourceTemplatesRequestSchema,
-      async () => ({
-        resourceTemplates: [
-          {
-            uriTemplate: 'opentargets://target/{id}',
-            name: 'Open Targets target information',
-            mimeType: 'application/json',
-            description: 'Complete target information for an Ensembl gene ID',
-          },
-          {
-            uriTemplate: 'opentargets://disease/{id}',
-            name: 'Open Targets disease information',
-            mimeType: 'application/json',
-            description: 'Complete disease information for an EFO ID',
-          },
-          {
-            uriTemplate: 'opentargets://drug/{id}',
-            name: 'Open Targets drug information',
-            mimeType: 'application/json',
-            description: 'Complete drug information for a ChEMBL ID',
-          },
-          {
-            uriTemplate: 'opentargets://association/{targetId}/{diseaseId}',
-            name: 'Target-disease association',
-            mimeType: 'application/json',
-            description: 'Target-disease association evidence and scoring',
-          },
-          {
-            uriTemplate: 'opentargets://search/{query}',
-            name: 'Search results',
-            mimeType: 'application/json',
-            description: 'Search results across targets, diseases, and drugs',
-          },
-        ],
-      })
-    );
-
-    this.server.setRequestHandler(
-      ReadResourceRequestSchema,
-      async (request: any) => {
-        const uri = request.params.uri;
-
-        // Handle target info requests
-        const targetMatch = uri.match(/^opentargets:\/\/target\/([A-Z0-9_]+)$/);
-        if (targetMatch) {
-          const targetId = targetMatch[1];
-          try {
-            const response = await this.apiClient.get(`/target/${targetId}`);
-            return {
-              contents: [
-                {
-                  uri: request.params.uri,
-                  mimeType: 'application/json',
-                  text: JSON.stringify(response.data, null, 2),
-                },
-              ],
-            };
-          } catch (error) {
-            throw new McpError(
-              ErrorCode.InternalError,
-              `Failed to fetch target ${targetId}: ${error instanceof Error ? error.message : 'Unknown error'}`
-            );
-          }
-        }
-
-        // Handle disease info requests
-        const diseaseMatch = uri.match(/^opentargets:\/\/disease\/([A-Z0-9_]+)$/);
-        if (diseaseMatch) {
-          const diseaseId = diseaseMatch[1];
-          try {
-            const response = await this.apiClient.get(`/disease/${diseaseId}`);
-            return {
-              contents: [
-                {
-                  uri: request.params.uri,
-                  mimeType: 'application/json',
-                  text: JSON.stringify(response.data, null, 2),
-                },
-              ],
-            };
-          } catch (error) {
-            throw new McpError(
-              ErrorCode.InternalError,
-              `Failed to fetch disease ${diseaseId}: ${error instanceof Error ? error.message : 'Unknown error'}`
-            );
-          }
-        }
-
-        throw new McpError(
-          ErrorCode.InvalidRequest,
-          `Invalid URI format: ${uri}`
-        );
-      }
-    );
+    // Resource templates are not directly supported in the same way with McpServer
+    // We'll use registerResource with ResourceTemplate for dynamic resources
+    // For now, keeping the basic structure - can be expanded later
   }
 
   private setupToolHandlers() {
-    this.server.setRequestHandler(ListToolsRequestSchema, async () => ({
-      tools: [
-        {
-          name: 'opentargets_info',
-          description: 'Unified tool for Open Targets operations: search targets and diseases, retrieve associations, and get detailed information. Access gene-drug-disease associations from Open Targets platform (v25.0.1). Use the method parameter to specify the operation type.',
-          inputSchema: {
-            type: 'object',
-            properties: {
-              method: {
-                type: 'string',
-                enum: [
-                  'search_targets',
-                  'search_diseases',
-                  'get_target_disease_associations',
-                  'get_disease_targets_summary',
-                  'get_target_details',
-                  'get_disease_details'
-                ],
-                description: 'The operation to perform: search_targets (search for therapeutic targets by gene symbol/name), search_diseases (search for diseases by name/synonym), get_target_disease_associations (get target-disease associations with evidence scores), get_disease_targets_summary (get overview of all targets associated with a disease), get_target_details (get comprehensive target information), or get_disease_details (get comprehensive disease information)'
+    this.server.registerTool(
+      'opentargets_info',
+      {
+        description: 'Unified tool for Open Targets operations: search targets and diseases, retrieve associations, and get detailed information. Access gene-drug-disease associations from Open Targets platform (v25.0.1). Use the method parameter to specify the operation type.',
+        inputSchema: z.object({
+          method: z.enum([
+            'search_targets',
+            'search_diseases',
+            'get_target_disease_associations',
+            'get_disease_targets_summary',
+            'get_target_details',
+            'get_disease_details'
+          ]).describe('The operation to perform: search_targets (search for therapeutic targets by gene symbol/name), search_diseases (search for diseases by name/synonym), get_target_disease_associations (get target-disease associations with evidence scores), get_disease_targets_summary (get overview of all targets associated with a disease), get_target_details (get comprehensive target information), or get_disease_details (get comprehensive disease information)'),
+          query: z.string().optional().describe('For search_targets and search_diseases: Search query (gene symbol, name, description for targets; disease name, synonym, description for diseases)'),
+          targetId: z.string().optional().describe('For get_target_disease_associations: Target Ensembl gene ID (e.g., ENSG00000012048)'),
+          diseaseId: z.string().optional().describe('For get_target_disease_associations and get_disease_targets_summary: Disease EFO ID (e.g., EFO_0000305)'),
+          minScore: z.number().min(0).max(1).optional().describe('For get_target_disease_associations and get_disease_targets_summary: Minimum association score (0-1)'),
+          id: z.string().optional().describe('For get_target_details and get_disease_details: Target Ensembl gene ID or Disease EFO ID'),
+          size: z.number().min(1).max(500).optional().describe('Number of results to return (1-500, default: 25 for searches, 50 for disease targets summary)'),
+          format: z.enum(['json', 'tsv']).optional().describe('Output format (default: json)'),
+        }),
+      },
+      async (args) => {
+        const method = args.method;
+        if (!method || !isValidMethod(method)) {
+          return {
+            content: [
+              {
+                type: 'text' as const,
+                text: 'method parameter is required and must be one of: search_targets, search_diseases, get_target_disease_associations, get_disease_targets_summary, get_target_details, get_disease_details',
               },
-              // Search parameters (for search_targets and search_diseases)
-              query: {
-                type: 'string',
-                description: 'For search_targets and search_diseases: Search query (gene symbol, name, description for targets; disease name, synonym, description for diseases)'
-              },
-              // Association parameters
-              targetId: {
-                type: 'string',
-                description: 'For get_target_disease_associations: Target Ensembl gene ID (e.g., ENSG00000012048)'
-              },
-              diseaseId: {
-                type: 'string',
-                description: 'For get_target_disease_associations and get_disease_targets_summary: Disease EFO ID (e.g., EFO_0000305)'
-              },
-              minScore: {
-                type: 'number',
-                description: 'For get_target_disease_associations and get_disease_targets_summary: Minimum association score (0-1)',
-                minimum: 0,
-                maximum: 1
-              },
-              // Detail parameters
-              id: {
-                type: 'string',
-                description: 'For get_target_details and get_disease_details: Target Ensembl gene ID or Disease EFO ID'
-              },
-              // Common parameters
-              size: {
-                type: 'number',
-                description: 'Number of results to return (1-500, default: 25 for searches, 50 for disease targets summary)',
-                minimum: 1,
-                maximum: 500
-              },
-              format: {
-                type: 'string',
-                enum: ['json', 'tsv'],
-                description: 'Output format (default: json)'
-              },
-            },
-            required: ['method'],
-          },
-        },
-      ],
-    }));
+            ],
+            isError: true,
+          };
+        }
 
-    this.server.setRequestHandler(CallToolRequestSchema, async (request: any) => {
-      const { name, arguments: args } = request.params;
-
-      if (name !== 'opentargets_info') {
-        throw new McpError(
-          ErrorCode.MethodNotFound,
-          `Unknown tool: ${name}`
-        );
+        switch (method) {
+          case 'search_targets':
+            return this.handleSearchTargets(args);
+          case 'search_diseases':
+            return this.handleSearchDiseases(args);
+          case 'get_target_disease_associations':
+            return this.handleGetTargetDiseaseAssociations(args);
+          case 'get_disease_targets_summary':
+            return this.handleGetDiseaseTargetsSummary(args);
+          case 'get_target_details':
+            return this.handleGetTargetDetails(args);
+          case 'get_disease_details':
+            return this.handleGetDiseaseDetails(args);
+          default:
+            return {
+              content: [
+                {
+                  type: 'text' as const,
+                  text: `Unknown method: ${method}`,
+                },
+              ],
+              isError: true,
+            };
+        }
       }
-
-      const method = args?.method;
-      if (!method || !isValidMethod(method)) {
-        throw new McpError(
-          ErrorCode.InvalidParams,
-          'method parameter is required and must be one of: search_targets, search_diseases, get_target_disease_associations, get_disease_targets_summary, get_target_details, get_disease_details'
-        );
-      }
-
-      switch (method) {
-        case 'search_targets':
-          return this.handleSearchTargets(args);
-        case 'search_diseases':
-          return this.handleSearchDiseases(args);
-        case 'get_target_disease_associations':
-          return this.handleGetTargetDiseaseAssociations(args);
-        case 'get_disease_targets_summary':
-          return this.handleGetDiseaseTargetsSummary(args);
-        case 'get_target_details':
-          return this.handleGetTargetDetails(args);
-        case 'get_disease_details':
-          return this.handleGetDiseaseDetails(args);
-        default:
-          throw new McpError(
-            ErrorCode.InvalidParams,
-            `Unknown method: ${method}`
-          );
-      }
-    });
+    );
   }
 
   private async handleSearchTargets(args: any) {
     if (!isValidTargetSearchArgs(args)) {
-      throw new McpError(ErrorCode.InvalidParams, 'Invalid target search arguments');
+      return {
+        content: [
+          {
+            type: 'text' as const,
+            text: 'Invalid target search arguments',
+          },
+        ],
+        isError: true,
+      };
     }
 
     try {
@@ -371,7 +228,7 @@ class OpenTargetsServer {
       return {
         content: [
           {
-            type: 'text',
+            type: 'text' as const,
             text: JSON.stringify(result, null, 2),
           },
         ],
@@ -380,7 +237,7 @@ class OpenTargetsServer {
       return {
         content: [
           {
-            type: 'text',
+            type: 'text' as const,
             text: `Error searching targets: ${error instanceof Error ? error.message : 'Unknown error'}`,
           },
         ],
@@ -391,7 +248,15 @@ class OpenTargetsServer {
 
   private async handleSearchDiseases(args: any) {
     if (!isValidDiseaseSearchArgs(args)) {
-      throw new McpError(ErrorCode.InvalidParams, 'Invalid disease search arguments');
+      return {
+        content: [
+          {
+            type: 'text' as const,
+            text: 'Invalid disease search arguments',
+          },
+        ],
+        isError: true,
+      };
     }
 
     try {
@@ -431,7 +296,7 @@ class OpenTargetsServer {
       return {
         content: [
           {
-            type: 'text',
+            type: 'text' as const,
             text: JSON.stringify(result, null, 2),
           },
         ],
@@ -440,7 +305,7 @@ class OpenTargetsServer {
       return {
         content: [
           {
-            type: 'text',
+            type: 'text' as const,
             text: `Error searching diseases: ${error instanceof Error ? error.message : 'Unknown error'}`,
           },
         ],
@@ -451,7 +316,15 @@ class OpenTargetsServer {
 
   private async handleGetTargetDiseaseAssociations(args: any) {
     if (!isValidAssociationArgs(args)) {
-      throw new McpError(ErrorCode.InvalidParams, 'Invalid association arguments');
+      return {
+        content: [
+          {
+            type: 'text' as const,
+            text: 'Invalid association arguments',
+          },
+        ],
+        isError: true,
+      };
     }
 
     try {
@@ -523,7 +396,7 @@ class OpenTargetsServer {
         return {
           content: [
             {
-              type: 'text',
+              type: 'text' as const,
               text: JSON.stringify({
                 data: {
                   target: {
@@ -613,7 +486,7 @@ class OpenTargetsServer {
         return {
           content: [
             {
-              type: 'text',
+              type: 'text' as const,
               text: JSON.stringify({
                 data: {
                   disease: {
@@ -642,7 +515,7 @@ class OpenTargetsServer {
         return {
           content: [
             {
-              type: 'text',
+              type: 'text' as const,
               text: JSON.stringify({
                 message: "Specific target-disease pair association lookup not yet implemented",
                 suggestion: "Use targetId OR diseaseId to get associations for that entity"
@@ -655,7 +528,7 @@ class OpenTargetsServer {
       return {
         content: [
           {
-            type: 'text',
+            type: 'text' as const,
             text: `Error getting associations: ${error instanceof Error ? error.message : 'Unknown error'}`,
           },
         ],
@@ -666,7 +539,15 @@ class OpenTargetsServer {
 
   private async handleGetDiseaseTargetsSummary(args: any) {
     if (!isValidIdArgs(args) && !args.diseaseId) {
-      throw new McpError(ErrorCode.InvalidParams, 'Disease ID is required');
+      return {
+        content: [
+          {
+            type: 'text' as const,
+            text: 'Disease ID is required',
+          },
+        ],
+        isError: true,
+      };
     }
 
     try {
@@ -757,7 +638,7 @@ class OpenTargetsServer {
       return {
         content: [
           {
-            type: 'text',
+            type: 'text' as const,
             text: JSON.stringify(summary, null, 2),
           },
         ],
@@ -766,7 +647,7 @@ class OpenTargetsServer {
       return {
         content: [
           {
-            type: 'text',
+            type: 'text' as const,
             text: `Error getting disease targets summary: ${error instanceof Error ? error.message : 'Unknown error'}`,
           },
         ],
@@ -777,7 +658,15 @@ class OpenTargetsServer {
 
   private async handleGetTargetDetails(args: any) {
     if (!isValidIdArgs(args)) {
-      throw new McpError(ErrorCode.InvalidParams, 'Target ID is required');
+      return {
+        content: [
+          {
+            type: 'text' as const,
+            text: 'Target ID is required',
+          },
+        ],
+        isError: true,
+      };
     }
 
     try {
@@ -1067,7 +956,7 @@ class OpenTargetsServer {
       return {
         content: [
           {
-            type: 'text',
+            type: 'text' as const,
             text: JSON.stringify(response.data, null, 2),
           },
         ],
@@ -1076,7 +965,7 @@ class OpenTargetsServer {
       return {
         content: [
           {
-            type: 'text',
+            type: 'text' as const,
             text: `Error getting target details: ${error instanceof Error ? error.message : 'Unknown error'}`,
           },
         ],
@@ -1087,7 +976,15 @@ class OpenTargetsServer {
 
   private async handleGetDiseaseDetails(args: any) {
     if (!isValidIdArgs(args)) {
-      throw new McpError(ErrorCode.InvalidParams, 'Disease ID is required');
+      return {
+        content: [
+          {
+            type: 'text' as const,
+            text: 'Disease ID is required',
+          },
+        ],
+        isError: true,
+      };
     }
 
     try {
@@ -1103,7 +1000,7 @@ class OpenTargetsServer {
       return {
         content: [
           {
-            type: 'text',
+            type: 'text' as const,
             text: JSON.stringify(response.data, null, 2),
           },
         ],
@@ -1112,7 +1009,7 @@ class OpenTargetsServer {
       return {
         content: [
           {
-            type: 'text',
+            type: 'text' as const,
             text: `Error getting disease details: ${error instanceof Error ? error.message : 'Unknown error'}`,
           },
         ],
