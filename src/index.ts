@@ -685,7 +685,7 @@ class OpenTargetsServer {
           alternativeGenes
 
           genomicLocation { chromosome start end strand }
-          canonicalTranscript { id }
+          canonicalTranscript { id start end }
           transcriptIds
           proteinIds { id source }
           dbXrefs { id source }
