@@ -680,41 +680,75 @@ class OpenTargetsServer {
 
           nameSynonyms { label source }
           symbolSynonyms { label source }
+          obsoleteNames { label source }
+          obsoleteSymbols { label source }
+          alternativeGenes
 
-          genomicLocation {
-            chromosome
-            start
-            end
-            strand
-          }
-
+          genomicLocation { chromosome start end strand }
+          canonicalTranscript { id }
+          transcriptIds
           proteinIds { id source }
           dbXrefs { id source }
 
+          geneOntology { term { id name } aspect evidence geneProduct source }
+          pathways { pathway pathwayId topLevelTerm }
+          subcellularLocations { location source termSL }
+
+          homologues { speciesId speciesName homologyType targetGeneId targetGeneSymbol queryPercentageIdentity targetPercentageIdentity isHighConfidence }
+
+          hallmarks {
+            attributes { name description pmid }
+            cancerHallmarks { impact label pmid }
+          }
+
+          chemicalProbes { id control drugId isHighQuality mechanismOfAction origin probeMinerScore probesDrugsScore scoreInCells scoreInOrganisms targetFromSourceId }
+
+          safetyLiabilities {
+            event eventId
+            effects { direction dosing }
+            biosamples { cellFormat cellLabel tissueId tissueLabel }
+            datasource literature
+            studies { description name type }
+          }
+
           tractability { label modality value }
           targetClass { id label level }
+          geneticConstraint { constraintType exp obs score oe oeLower oeUpper }
 
-          pathways { pathway pathwayId topLevelTerm }
+          expressions {
+            tissue { id label anatomicalSystems organs }
+            rna { value level unit }
+            protein { level cellType { name reliability } }
+          }
 
-          knownDrugs(size: 50) {
-            uniqueDrugs
-            count
+          mousePhenotypes {
+            modelPhenotypeClasses { id label }
+            modelPhenotypeId modelPhenotypeLabel
+            biologicalModels { allelicComposition geneticBackground id }
+          }
+
+          depMapEssentiality { tissueId tissueName }
+
+          tep { name therapeuticArea uri description }
+
+          knownDrugs(size: 100) {
+            uniqueDrugs uniqueTargets uniqueDiseases count
             rows {
-              prefName
-              drugType
-              drugId
-              mechanismOfAction
-              phase
-              status
+              approvedSymbol approvedName prefName drugType drugId
+              mechanismOfAction targetClass diseaseId
               disease { id name }
+              phase status
+              urls { name url }
+              references { ids source urls }
             }
           }
 
-          associatedDiseases(page: {index: 0, size: 25}) {
+          associatedDiseases(page: {index: 0, size: 50}) {
             count
             rows {
               disease { id name }
               score
+              datatypeScores { id score }
             }
           }
         }
