@@ -676,27 +676,11 @@ class OpenTargetsServer {
           approvedSymbol
           approvedName
           biotype
+          functionDescriptions
 
-          # Synonyms and alternative names
-          nameSynonyms {
-            label
-            source
-          }
-          symbolSynonyms {
-            label
-            source
-          }
-          obsoleteNames {
-            label
-            source
-          }
-          obsoleteSymbols {
-            label
-            source
-          }
-          alternativeGenes
+          nameSynonyms { label source }
+          symbolSynonyms { label source }
 
-          # Genomic location
           genomicLocation {
             chromosome
             start
@@ -704,243 +688,33 @@ class OpenTargetsServer {
             strand
           }
 
-          # Transcript and protein IDs
-          canonicalTranscript {
-            id
-            start
-            end
-          }
-          transcriptIds
-          proteinIds {
-            id
-            source
-          }
+          proteinIds { id source }
+          dbXrefs { id source }
 
-          # External database cross-references
-          dbXrefs {
-            id
-            source
-          }
+          tractability { label modality value }
+          targetClass { id label level }
 
-          # Functional descriptions
-          functionDescriptions
+          pathways { pathway pathwayId topLevelTerm }
 
-          # Gene Ontology annotations
-          geneOntology {
-            term {
-              id
-              name
-            }
-            aspect
-            evidence
-            geneProduct
-            source
-          }
-
-          # Pathways
-          pathways {
-            pathway
-            pathwayId
-            topLevelTerm
-          }
-
-          # Subcellular localization
-          subcellularLocations {
-            location
-            source
-            termSL
-          }
-
-          # Homologues
-          homologues {
-            speciesId
-            speciesName
-            homologyType
-            targetGeneId
-            targetGeneSymbol
-            queryPercentageIdentity
-            targetPercentageIdentity
-            isHighConfidence
-          }
-
-          # Hallmarks
-          hallmarks {
-            attributes {
-              name
-              description
-              pmid
-            }
-            cancerHallmarks {
-              impact
-              label
-              pmid
-            }
-          }
-
-          # Chemical probes
-          chemicalProbes {
-            id
-            control
-            drugId
-            isHighQuality
-            mechanismOfAction
-            origin
-            probeMinerScore
-            probesDrugsScore
-            scoreInCells
-            scoreInOrganisms
-            targetFromSourceId
-          }
-
-          # Safety liabilities
-          safetyLiabilities {
-            event
-            eventId
-            effects {
-              direction
-              dosing
-            }
-            biosamples {
-              cellFormat
-              cellLabel
-              tissueId
-              tissueLabel
-            }
-            datasource
-            literature
-            studies {
-              description
-              name
-              type
-            }
-          }
-
-          # Tractability assessments
-          tractability {
-            label
-            modality
-            value
-          }
-
-          # Target class
-          targetClass {
-            id
-            label
-            level
-          }
-
-          # Genetic constraint
-          geneticConstraint {
-            constraintType
-            exp
-            obs
-            score
-            oe
-            oeLower
-            oeUpper
-          }
-
-          # Expression data
-          expressions {
-            tissue {
-              id
-              label
-              anatomicalSystems
-              organs
-            }
-            rna {
-              value
-              level
-              unit
-            }
-            protein {
-              level
-              cellType {
-                name
-                reliability
-              }
-            }
-          }
-
-          # Mouse phenotypes
-          mousePhenotypes {
-            modelPhenotypeClasses {
-              id
-              label
-            }
-            modelPhenotypeId
-            modelPhenotypeLabel
-            biologicalModels {
-              allelicComposition
-              geneticBackground
-              id
-            }
-          }
-
-          # DepMap essentiality
-          depMapEssentiality {
-            tissue {
-              id
-              name
-            }
-          }
-
-          # TEP (Target Enabling Package)
-          tep {
-            name
-            therapeuticArea
-            uri
-            description
-          }
-
-          # Prioritisation (skip - complex structure)
-
-          # Known drugs (paginated)
-          knownDrugs(size: 100) {
+          knownDrugs(size: 50) {
             uniqueDrugs
-            uniqueTargets
-            uniqueDiseases
             count
             rows {
-              approvedSymbol
-              approvedName
               prefName
               drugType
               drugId
               mechanismOfAction
-              targetClass
-              diseaseId
-              disease {
-                id
-                name
-              }
               phase
               status
-              urls {
-                name
-                url
-              }
-              references {
-                ids
-                source
-                urls
-              }
+              disease { id name }
             }
           }
 
-          # Associated diseases (top 50)
-          associatedDiseases(page: {index: 0, size: 50}) {
+          associatedDiseases(page: {index: 0, size: 25}) {
             count
             rows {
-              disease {
-                id
-                name
-              }
+              disease { id name }
               score
-              datatypeScores {
-                id
-                score
-              }
             }
           }
         }
